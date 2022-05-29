@@ -1,1 +1,4 @@
 docker == 5.0.3
+Flask == 2.1.2
+flask-sock == 0.5.2
+
