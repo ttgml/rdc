@@ -3,7 +3,12 @@ from flask import Flask, jsonify, render_template
 from flask_sock import Sock
 import docker
 
-client = docker.from_env()
+try:
+    client = docker.from_env()
+except Exception as e:
+    print("Docker environment not found")
+    print("Run again after install Docker")
+    exit(1)
 
 app = Flask(__name__)
 sock = Sock(app)
