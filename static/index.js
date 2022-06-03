@@ -2,7 +2,6 @@ var ws = null;
 var connected = false;
 
 var serverUrl = "ws://" + location.host + "/log";
-console.log(serverUrl)
 
 var connectionStatus = $('#connectionStatus');
 
@@ -23,7 +22,6 @@ var msg;
 var needscroll = true;
 
 var open = function() {
-    console.log("open click")
     ws = new WebSocket(serverUrl);
     ws.onopen = onOpen;
     ws.onclose = onClose;
@@ -42,7 +40,6 @@ var clearLog = function() {
 };
 
 var onOpen = function() {
-    console.log('OPENED: ' + serverUrl);
     connected = true;
     connectionStatus.text('OPENED');
 };
@@ -113,18 +110,28 @@ $('#reloadButton').click(function (){
 })
 
 function get_docker_info(){
-    $.get("/info", function (data, status){
-        console.log(data);
-        info = data
-        for (var s in data["services"]){
-            s_name = data["services"][s]["Spec"]["Name"]
-            service_list.push(s_name)
+    $.ajax(
+        {
+            url: "/info",
+            sync: true,
+            complete: function(data){
+                if (data.status != 200){
+                    alert(data["msg"])
+                }else {
+                    data = data.responseJSON
+                    info = data
+                    for (var s in data["services"]){
+                        s_name = data["services"][s]["Spec"]["Name"]
+                        service_list.push(s_name)
+                    }
+                    for (var c in data["containers"]){
+                        c_name = data["containers"][c]["Name"]
+                        container_list.push(c_name)
+                    }
+                }
+            }
         }
-        for (var c in data["containers"]){
-            c_name = data["containers"][c]["Name"]
-            container_list.push(c_name)
-        }
-    })
+    )
 }
 
 function load_sc(){
@@ -174,7 +181,6 @@ function openit(index,type){
             "id": info['containers'][index]['Id']
         }
     }
-    console.log(msg)
     clearLog()
     open()
     setTimeout(function (){
@@ -184,11 +190,12 @@ function openit(index,type){
 
 function start_log(){
     if (ws){
-        ws.send(JSON.stringify(msg))
-    } else {
-        console.log(ws)
+        if (msg == undefined){
+            alert("Please select Service/Container, try again.")
+        }else{
+            ws.send(JSON.stringify(msg))
+        }
     }
-
 }
 function stop_log(){
     onClose()

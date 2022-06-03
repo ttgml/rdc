@@ -1,13 +1,23 @@
 import json
+import os.path
+import time
+
 from flask import Flask, jsonify, render_template
 from flask_sock import Sock
 import docker
 
 try:
-    client = docker.from_env()
+    if os.path.exists("/.dockerenv"):
+        client = docker.DockerClient(base_url='unix:///run/docker.sock')
+    else:
+        client = docker.from_env()
 except Exception as e:
     print("Docker environment not found")
     print("Run again after install Docker")
+    print("------------------------------")
+    print("docker --rm -it -P -v /path/to/docker.sock:/run/docker.sock")
+    print("------------------------------")
+    time.sleep(100)
     exit(1)
 
 app = Flask(__name__)
@@ -24,10 +34,14 @@ def echo_info():
     msg = {}
     services = []
     containers = []
-    for srv in client.services.list():
-        services.append(srv.attrs)
-    for pod in client.containers.list():
-        containers.append(pod.attrs)
+    try:
+        for srv in client.services.list():
+            services.append(srv.attrs)
+        for pod in client.containers.list():
+            containers.append(pod.attrs)
+    except Exception as e:
+        msg["msg"] = str(e)
+        return jsonify(msg), 500
     msg["services"] = services
     msg["containers"] = containers
     msg["type"] = 1
