@@ -37,6 +37,9 @@ def echo_info():
     try:
         for srv in client.services.list():
             services.append(srv.attrs)
+    except Exception as e:
+        pass
+    try:
         for pod in client.containers.list():
             containers.append(pod.attrs)
     except Exception as e:

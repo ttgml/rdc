@@ -116,6 +116,7 @@ function get_docker_info(){
             sync: true,
             complete: function(data){
                 if (data.status != 200){
+                    data = data.responseJSON
                     alert(data["msg"])
                 }else {
                     data = data.responseJSON
@@ -135,25 +136,33 @@ function get_docker_info(){
 }
 
 function load_sc(){
-    for (i in service_list) {
-        var ss_list = $('<li>').attr('id', guid()).append(
-            $('<a>').attr('title', service_list[i])
-                .attr('class', 'historyUrl')
-                .attr('href', '#')
-                .attr('onclick',"ss_load_it('"+ i +"')")
-                .append(service_list[i])
-        )
-        ss_list.prependTo(serviceList)
+    if (service_list.length > 0){
+        for (i in service_list) {
+            var ss_list = $('<li>').attr('id', guid()).append(
+                $('<a>').attr('title', service_list[i])
+                    .attr('class', 'historyUrl')
+                    .attr('href', '#')
+                    .attr('onclick',"ss_load_it('"+ i +"')")
+                    .append(service_list[i])
+            )
+            ss_list.prependTo(serviceList)
+        }
+    }else{
+        $('<li>').append('No found any service').prependTo(serviceList)
     }
-    for (i in container_list) {
-        var cc_list = $('<li>').attr('id', guid()).append(
-            $('<a>').attr('title', container_list[i])
-                .attr('class', 'historyUrl')
-                .attr('href', '#')
-                .attr('onclick',"cc_load_it('"+ i +"')")
-                .append(container_list[i])
-        )
-        cc_list.prependTo(containerList)
+    if (container_list.length>0) {
+        for (i in container_list) {
+            var cc_list = $('<li>').attr('id', guid()).append(
+                $('<a>').attr('title', container_list[i])
+                    .attr('class', 'historyUrl')
+                    .attr('href', '#')
+                    .attr('onclick', "cc_load_it('" + i + "')")
+                    .append(container_list[i])
+            )
+            cc_list.prependTo(containerList)
+        }
+    }else {
+        $('<li>').append('No found any container').prependTo(containerList)
     }
 }
 
