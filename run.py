@@ -1,6 +1,5 @@
 import json
 import os.path
-import time
 
 from flask import Flask, jsonify, render_template
 from flask_sock import Sock
@@ -16,7 +15,7 @@ except Exception as e:
     print("Docker environment not found")
     print("Run again after install Docker")
     print("------------------------------")
-    print("docker --rm -it -P -v /path/to/docker.sock:/run/docker.sock")
+    print("docker --rm -it -P -v /path/to/docker.sock:/run/docker.sock <image>")
     print("------------------------------")
     exit(1)
 
