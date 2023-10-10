@@ -12,12 +12,12 @@ try:
     else:
         client = docker.from_env()
 except Exception as e:
+    print(e)
     print("Docker environment not found")
     print("Run again after install Docker")
     print("------------------------------")
     print("docker --rm -it -P -v /path/to/docker.sock:/run/docker.sock")
     print("------------------------------")
-    time.sleep(100)
     exit(1)
 
 app = Flask(__name__)
@@ -58,8 +58,7 @@ def echo(ws):
         try:
             data_json = json.loads(data);
         except:
-            print("readerror")
-            msg["msg"] = "read data error , need json"
+            msg["msg"] = "read data error"
             ws.send(msg)
             ws.close()
         try:
@@ -67,20 +66,33 @@ def echo(ws):
                 msg["type"] = 1
                 ws.send(msg)
             elif data_json['type'] == 2:
+                line = ""
                 if data_json['t'] == "ss":
-                    for line in client.services.get(data_json['id']).logs(follow=True,stderr=True,tail=20):
-                        ws.send(line.decode())
-
+                    for i in client.services.get(data_json['id']).logs(follow=True,stderr=True,tail=20):
+                        if i != b'\n':
+                            line = line + i.decode()
+                        else:
+                            ws.send(line)
+                            line = ""
                 if data_json['t'] == "cc":
-                    for line in client.containers.get(data_json['id']).logs(follow=True, tail=20, stream=True):
-                        ws.send(line.decode())
-                ws.send("ok")
+                    cr = client.containers.get(data_json['id'])
+                    # for line in cr.logs(follow=True, stderr=True, tail=20, stream=True):
+                    #     ws.send(line.decode())
+                    for i in cr.logs(follow=True, stderr=True, tail=20, stream=True):
+                        if i != b'\n':
+                            line = line + i.decode()
+                        else:
+                            ws.send(line)
+                            line = ""
+                ws.send("done.")
             else:
                 msg["type"] = 0
                 msg["msg"] = "emmm..."
                 ws.send(msg)
         except Exception as e:
             print(e)
-            msg["msg"] = "bad parm"
+            msg["msg"] = str(e)
             ws.send(msg)
 
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=4000)
